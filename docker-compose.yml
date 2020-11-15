@@ -1,0 +1,49 @@
+version: "3.3"
+
+services:
+
+  redis:
+    image: "redis:alpine"
+
+  gateway:
+    image: "traefik:v2.3"
+    container_name: "gateway"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  web:
+    build: UCL.TP.ISA01.MicroServices.Demo.Web
+    image: demo-web:v1
+    labels:
+      traefik.enable: true
+      traefik.http.services.web.loadbalancer.server.port: 80
+      traefik.http.routers.web.rule: Path(`/`)
+
+  services:
+    build: .
+    image: demo-services:v1
+
+  cart-service:
+    image: demo-services:v1
+    command: ["dotnet", "UCL.TP.ISA01.MicroServices.Demo.CartService.dll"]
+    labels:
+      traefik.enable: true
+      traefik.http.services.cart-service.loadbalancer.server.port: 80
+      traefik.http.routers.cart-service.rule: PathPrefix(`/cart`)
+
+  product-service:
+    image: demo-services:v1
+    command: ["dotnet", "UCL.TP.ISA01.MicroServices.Demo.ProductService.dll"]
+    labels:
+      traefik.enable: true
+      traefik.http.services.product-service.loadbalancer.server.port: 80
+      traefik.http.routers.product-service.rule: PathPrefix(`/product`)

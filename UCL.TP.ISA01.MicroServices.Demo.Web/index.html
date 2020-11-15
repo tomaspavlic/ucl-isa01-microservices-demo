@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Demo application (ISA01)</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+        integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+</head>
+
+<body>
+    <script type="text/javascript">
+        $(function () {
+            $.getJSON('http://localhost/product', function (data) {
+                $.each(data, function (k, v) {
+                    $("#products").append('<option value=' + v.id + '>' + v.name + ' (' + v.price + ')' + '</option>');
+                })
+            })
+
+            var printJson = function(json) {
+                $("#cart").text(JSON.stringify(json, undefined, 2));
+            }
+
+            var refreshCart = function () {
+                $.getJSON('http://localhost/cart', function (data) {
+                    printJson(data);
+                })
+            };
+
+            $("#add").on("click", function () {
+                var productId = $("#products").val()
+                var quantity = $("#quantity").val()
+
+                $.getJSON('http://localhost/cart/add/' + productId + '/quantity/' + quantity, function (data) {
+                    printJson(data);
+                });
+            });
+
+            refreshCart();
+        });
+    </script>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">Demo application (ISA01)</a>
+    </nav>
+    <br />
+    <br />
+    <br />
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Add to cart
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        <label for="product">Product</label>
+                        <select id="products" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">Quantity</label>
+                        <input id="quantity" type="number" placeholder="Quantity" class="form-control" />
+                    </div>
+                    <input type="button" id="add" value="add" class="btn btn-primary" />
+                </form>
+            </div>
+        </div>
+        <br />
+        <div class="card">
+            <div class="card-header">
+                Cart
+            </div>
+            <div class="card-body">
+                <pre id="cart">
+
+                </pre>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
